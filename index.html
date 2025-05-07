@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>واجهة محادثة</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        html { color-scheme: dark; }
+        body { background-color: #212121; color: #e0e0e0; height: 100vh; display: flex; overflow: hidden; transition: padding-right 0.3s ease; }
+        body.sidebar-hidden #sidebar { display: none; }
+        #sidebar { width: 260px; background-color: #171717; display: flex; flex-direction: column; padding: 10px; border-left: 1px solid #333; height: 100vh; overflow-y: auto; direction: rtl; flex-shrink: 0; transition: width 0.3s ease, display 0.3s ease; }
+        #new-chat-button { background-color: #333; color: #eee; border: 1px solid #444; padding: 10px 15px; border-radius: 8px; cursor: pointer; text-align: right; margin-bottom: 15px; font-size: 14px; transition: background-color 0.2s ease; }
+        #new-chat-button:hover { background-color: #444; }
+        #conversation-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; }
+        .conversation-item { padding: 8px 12px; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ccc; transition: background-color 0.2s ease; }
+        .conversation-item:hover { background-color: #2a2a2a; }
+        .conversation-item.active { background-color: #3a3a3a; color: #fff; }
+        .main-chat-area { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; }
+         #sidebar-toggle { position: absolute; top: 10px; right: 10px; z-index: 102; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #ccc; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; border: none; }
+         #sidebar-toggle:hover { background: rgba(255, 255, 255, 0.2); }
+         #model-display-trigger { text-align: center; padding: 8px 15px; margin: 10px auto; cursor: pointer; color: #ccc; font-size: 14px; border-radius: 8px; background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); display: block; /* Changed to block for simpler centering */ width: fit-content; /* Adjust width to content */ position: relative; /* Keep for potential future relative positioning needs, but dropdown is now fixed/absolute to main area */ z-index: 101; }
+         #model-display-trigger:hover { background-color: rgba(255, 255, 255, 0.1); }
+         #current-model-name-display { margin-left: 5px; }
+         .model-selector-dropdown {
+             position: absolute; /* Position relative to main-chat-area */
+             top: 50px; /* Adjust as needed, below trigger */
+             left: 50%; /* Center horizontally */
+             transform: translateX(-50%); /* Center horizontally */
+             background: #333; border-radius: 10px; border: 1px solid #555; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+             padding: 5px; z-index: 1000; display: none; width: 280px; max-height: 400px; overflow-y: auto; text-align: right;
+         }
+         .model-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #444; cursor: pointer; color: #ccc; border-radius: 5px; margin: 2px 0; } .model-item:last-child { border-bottom: none; } .model-item:hover { background-color: #444; } .model-item img { width: 30px; height: 30px; border-radius: 50%; margin-left: 10px; display: inline-block; vertical-align: middle; } .model-info { flex: 1; } .model-name { font-weight: bold; font-size: 14px; } .model-version { font-size: 11px; color: #999; } .model-badge { background: linear-gradient(45deg, #ff6b6b, #ff8a80); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-right: 5px; } .selected-model { background-color: #4a4a4a; }
+        .chat-scroll-area { flex: 1; overflow-y: auto; padding: 0 20px; display: flex; flex-direction: column; align-items: center; }
+        #initial-prompt { text-align: center; color: #aaa; font-size: 20px; display: none; margin-top: auto; margin-bottom: auto; } #initial-prompt.visible { display: block; }
+        .chat-messages { width: 100%; max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding: 20px 0; }
+        .message { width: auto; max-width: 85%; padding: 10px 15px; border-radius: 12px; line-height: 1.6; word-wrap: break-word; color: #e0e0e0; text-align: right; } .message.message-ltr { direction: ltr; text-align: left; align-self: flex-end !important; } .user-message { align-self: flex-start; background-color: #3a3a3a; } .bot-message { align-self: flex-start; }
+        .input-container { width: 100%; max-width: 800px; margin: 0 auto 20px auto; padding: 5px; display: flex; align-items: center; }
+        .input-box { display: flex; align-items: center; flex: 1; background-color: #3c3c3c; border: 1px solid #555; border-radius: 25px; padding: 5px 10px 5px 15px; }
+        #message-input { flex: 1; border: none; outline: none; padding: 10px; font-size: 16px; background-color: transparent; color: #e0e0e0; } #message-input::placeholder { color: #888; }
+        .send-button { width: 38px; height: 38px; border-radius: 50%; background: #555; color: #ccc; display: flex; justify-content: center; align-items: center; margin-right: 5px; cursor: pointer; transition: background-color 0.2s ease; border: none; font-size: 18px; } .send-button:hover { background-color: #666; } .send-button:active { transform: scale(0.95); } .input-actions:empty { display: none; }
+        .message .code-block-container { background-color: #1e1e1e; color: #d4d4d4; border-radius: 8px; margin: 10px 0; position: relative; overflow: hidden; border: 1px solid #444; } .message .code-block-header { background-color: #333; padding: 5px 15px; font-size: 12px; color: #ccc; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; } .message .code-block-container pre { padding: 15px; margin: 0; overflow-x: auto; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.5; white-space: pre; direction: ltr; text-align: left; } .message .code-block-container code { font-family: inherit; background: none; color: inherit; padding: 0; } .message .copy-code-button { background-color: #555; color: #fff; border: none; padding: 3px 8px; border-radius: 5px; cursor: pointer; font-size: 12px; opacity: 0.8; transition: opacity 0.2s ease, background-color 0.2s ease; margin-left: 10px; } .message .code-block-container:hover .copy-code-button { opacity: 1; } .message .copy-code-button:hover { background-color: #666; } .message .copy-code-button.copied { background-color: #4CAF50; } .message .copy-code-button.copied::after { content: " (تم النسخ)"; font-size: 10px; }
+        .loading { display: none; text-align: center; margin: 20px 0; } .loading .spinner { width: 24px; height: 24px; border-width: 3px; display: inline-block; vertical-align: middle; border-radius: 50%; animation: spin 1s ease-in-out infinite; border: 3px solid rgba(200, 200, 200, 0.2); border-top-color: #ccc; } @keyframes spin { to { transform: rotate(360deg); } }
+        #sidebar::-webkit-scrollbar { width: 6px; } #sidebar::-webkit-scrollbar-track { background: #171717; } #sidebar::-webkit-scrollbar-thumb { background-color: #444; border-radius: 3px; } #sidebar::-webkit-scrollbar-thumb:hover { background-color: #555; } #sidebar { scrollbar-width: thin; scrollbar-color: #444 #171717; }
+        .chat-scroll-area::-webkit-scrollbar { width: 8px; } .chat-scroll-area::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; } .chat-scroll-area::-webkit-scrollbar-thumb { background-color: #555; border-radius: 4px; border: 2px solid transparent; background-clip: content-box; } .chat-scroll-area::-webkit-scrollbar-thumb:hover { background-color: #777; } .chat-scroll-area { scrollbar-width: thin; scrollbar-color: #555 #2a2a2a; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <button id="new-chat-button">محادثة جديدة +</button>
+        <ul id="conversation-list"></ul>
+    </div>
+
+    <div class="main-chat-area">
+         <button id="sidebar-toggle">☰</button> <!-- Added Toggle Button -->
+
+         <div id="model-display-trigger"> <!-- Removed class="model-trigger" as it wasn't used -->
+             <span id="current-model-name-display">Model Name</span> &#9662;
+         </div>
+         <div id="model-selector" class="model-selector-dropdown"></div>
+
+         <div class="chat-scroll-area">
+            <div id="initial-prompt"><h2>ما الذي تعمل عليه؟</h2></div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="loading" id="loading"><div class="spinner"></div></div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-box">
+                <input type="text" id="message-input" placeholder="اسأل أي شيء...">
+                <button class="send-button" id="send-button">➤</button>
+            </div>
+            <div class="input-actions"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
