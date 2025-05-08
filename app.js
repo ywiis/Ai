@@ -65,7 +65,7 @@ async function getAccessToken() {
     try {
         const randomSecret = crypto.randomUUID();
         const randomAndroidId = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2, '0')).join('');
-        const response = await fetch("https://saas.castbox.fm/auth/api/v1/tokens/provider/secret", {
+        const response = await fetch("https://api.allorigins.win/raw?url=https://saas.castbox.fm/auth/api/v1/tokens/provider/secret", {
             method: 'POST',
             headers: {
                 'User-Agent': "Dart/3.3 (dart:io)", 'Accept-Encoding': "gzip", 'Content-Type': "application/json", 'x-app-id': "ai-seek",
@@ -86,7 +86,7 @@ async function fetchAvailableModels() {
             const tokenData = await getAccessToken(); accessToken = tokenData.token; androidId = tokenData.androidId;
             if (!accessToken) throw new Error("Cannot get access token");
         }
-        const response = await fetch("https://ai-seek.thebetter.ai/v1/chat/list_models", {
+        const response = await fetch("https://api.allorigins.win/raw?url=https://ai-seek.thebetter.ai/v1/chat/list_models", {
              method: 'GET',
              headers: {
                 'User-Agent': "Dart/3.3 (dart:io)", 'Accept-Encoding': "gzip", 'x-app-id': "ai-seek",
@@ -268,7 +268,7 @@ async function sendMessage(message) {
              if (!accessToken) throw new Error("Cannot get access token for send");
         }
 
-        const response = await fetch("https://ai-seek.thebetter.ai/v3/chat/send", {
+        const response = await fetch("https://api.allorigins.win/raw?url=https://ai-seek.thebetter.ai/v3/chat/send", {
              method: 'POST',
              headers: { // Restore full headers
                  'User-Agent': "Dart/3.3 (dart:io)", 'Accept': "text/event-stream", 'Accept-Encoding': "gzip", 'Content-Type': "application/json", 'x-app-id': "ai-seek",
