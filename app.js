@@ -67,7 +67,7 @@ async function getAccessToken() {
         const randomSecret = crypto.randomUUID();
         const randomAndroidId = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2, '0')).join('');
         const targetUrl = "https://saas.castbox.fm/auth/api/v1/tokens/provider/secret";
-        const response = await fetch(CORS_PROXY_URL + targetUrl, {
+        const response = await fetch(`${CORS_PROXY_URL}${targetUrl}`, {
             method: 'POST',
             headers: {
                 'User-Agent': "Dart/3.3 (dart:io)", 'Accept-Encoding': "gzip", 'Content-Type': "application/json", 'x-app-id': "ai-seek",
