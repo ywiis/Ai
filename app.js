@@ -65,9 +65,10 @@ async function getAccessToken() {
     try {
         const randomSecret = crypto.randomUUID();
         const randomAndroidId = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2, '0')).join('');
-        const response = await fetch("https://api.allorigins.win/raw?url=https://saas.castbox.fm/auth/api/v1/tokens/provider/secret", {
+        const response = await fetch("https://proxy.cors.sh/https://saas.castbox.fm/auth/api/v1/tokens/provider/secret", {
             method: 'POST',
             headers: {
+                'x-cors-api-key': 'temp_ca0135779d246d99850787880700a18c',
                 'User-Agent': "Dart/3.3 (dart:io)", 'Accept-Encoding': "gzip", 'Content-Type': "application/json", 'x-app-id': "ai-seek",
                 'x-device-info': `appIdentifier=ai.chatbot.ask.chat.deep.seek.assistant.search.free;appVersion=1.5.${Math.floor(Math.random() * 10)}-25040965;deviceType=android;deviceCountry=US;appCountry=us;local=en_US;language=en;timezone=Asia/Baghdad;brand=realme;model=RMX${Math.floor(1000 + Math.random() * 9000)};androidId=${randomAndroidId}`,
                 'x-access-token': ""
@@ -86,9 +87,10 @@ async function fetchAvailableModels() {
             const tokenData = await getAccessToken(); accessToken = tokenData.token; androidId = tokenData.androidId;
             if (!accessToken) throw new Error("Cannot get access token");
         }
-        const response = await fetch("https://api.allorigins.win/raw?url=https://ai-seek.thebetter.ai/v1/chat/list_models", {
+        const response = await fetch("https://proxy.cors.sh/https://ai-seek.thebetter.ai/v1/chat/list_models", {
              method: 'GET',
              headers: {
+                'x-cors-api-key': 'temp_ca0135779d246d99850787880700a18c',
                 'User-Agent': "Dart/3.3 (dart:io)", 'Accept-Encoding': "gzip", 'x-app-id': "ai-seek",
                 'x-device-info': `appIdentifier=ai.chatbot.ask.chat.deep.seek.assistant.search.free;appVersion=1.5.2-25040965;deviceType=android;deviceCountry=US;appCountry=us;local=en_US;language=en;timezone=Asia/Baghdad;brand=realme;model=RMX1931;androidId=${androidId}`,
                 'content-type': "application/json", 'x-access-token': accessToken
@@ -268,9 +270,10 @@ async function sendMessage(message) {
              if (!accessToken) throw new Error("Cannot get access token for send");
         }
 
-        const response = await fetch("https://api.allorigins.win/raw?url=https://ai-seek.thebetter.ai/v3/chat/send", {
+        const response = await fetch("https://proxy.cors.sh/https://ai-seek.thebetter.ai/v3/chat/send", {
              method: 'POST',
              headers: { // Restore full headers
+                 'x-cors-api-key': 'temp_ca0135779d246d99850787880700a18c',
                  'User-Agent': "Dart/3.3 (dart:io)", 'Accept': "text/event-stream", 'Accept-Encoding': "gzip", 'Content-Type': "application/json", 'x-app-id': "ai-seek",
                  'x-device-info': `appIdentifier=ai.chatbot.ask.chat.deep.seek.assistant.search.free;appVersion=1.5.2-25040965;deviceType=android;deviceCountry=US;appCountry=us;local=en_US;language=en;timezone=Asia/Baghdad;brand=realme;model=RMX1931;androidId=${androidId}`,
                  'x-access-token': accessToken
