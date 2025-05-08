@@ -75,6 +75,9 @@ async function getAccessToken() {
                 'x-access-token': ""
             }, body: JSON.stringify({ "secret": randomSecret })
         });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         if (data.data && data.data.token) { return { token: data.data.token, androidId: randomAndroidId }; }
         else { throw new Error("Token not found in response"); }
